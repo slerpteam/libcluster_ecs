@@ -281,7 +281,7 @@ defmodule Cluster.EcsClusterInfo do
     {:ok, containers}
   end
 
-  defp extract_container_data(%{"launchType" => "FARGATE", "lastStatus" => "RUNNING"} = task, container_port, host_name_source) do
+  defp extract_container_data(%{"launchType" => "FARGATE", "healthStatus" => "HEALTHY", "lastStatus" => "RUNNING"} = task, container_port, host_name_source) do
     task
     |> Map.get("containers")
     |> Enum.map(fn c ->
