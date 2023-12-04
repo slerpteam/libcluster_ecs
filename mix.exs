@@ -33,9 +33,7 @@ defmodule ClusterEcs.MixProject do
   defp deps do
     [
       {:ex_doc, "~> 0.28", only: :dev, runtime: false},
-      {:ex_aws, "~> 2.1"},
-      {:ex_aws_ec2, "~> 2.0"},
-      {:sweet_xml, "~> 0.7.0"},
+      {:ex_aws, ">= 2.1.0"},
       {:libcluster, "~> 3.3"}
     ]
   end

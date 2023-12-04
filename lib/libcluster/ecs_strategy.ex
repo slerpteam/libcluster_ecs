@@ -8,7 +8,7 @@ defmodule Cluster.EcsStrategy do
 
   alias Cluster.Strategy.State
 
-  @default_polling_interval 5_000
+  @default_polling_interval 10_000
 
   @impl true
   def start_link(args), do: GenServer.start_link(__MODULE__, args)
@@ -31,9 +31,9 @@ defmodule Cluster.EcsStrategy do
     {:noreply, state}
   end
 
-  defp load(%State{topology: topology, meta: meta} = state) do
+  defp load(%State{config: config, meta: meta, topology: topology} = state) do
     new_nodelist =
-      Cluster.EcsClusterInfo.get_nodes()
+      Cluster.EcsStrategy.ClusterInfo.get_nodes(config)
       |> Map.keys()
       |> MapSet.new()
 
