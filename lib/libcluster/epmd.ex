@@ -14,6 +14,10 @@ defmodule Cluster.EcsStrategy.EPMD do
     {:ok, :rand.uniform(3)}
   end
 
+  def listen_port_please(_name, _host) do
+    {:ok, distribution_port()}
+  end
+
   def port_please(_name, _ip) do
     {:port, distribution_port(), @protocol_version}
   end
