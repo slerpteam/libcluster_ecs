@@ -1,36 +1,34 @@
-defmodule Cluster.EPMD do
-  alias Cluster.EcsClusterInfo
+defmodule Cluster.EcsStrategy.EPMD do
+  @moduledoc """
+  EPMD module for ECS strategy
+  """
   require Logger
 
-  @magic_version 5
+  @protocol_version 5
 
   def start_link do
-    :erl_epmd.start_link()
+    :ignore
   end
 
-  def register_node(name, port, family) do
-    :erl_epmd.register_node(name, port, family)
+  def register_node(_name, _port, _family) do
+    {:ok, :rand.uniform(3)}
   end
 
-  def listen_port_please(_name, _hostname) do
-    container_port = System.get_env("DISTRIBUTION_PORT") |> String.to_integer()
-    {:ok, container_port}
+  def listen_port_please(_name, _host) do
+    {:ok, distribution_port()}
   end
 
-  @spec address_please(charlist(), charlist(), atom()) ::
-          {:ok, :inet.ip_address(), integer(), integer()} | {:error, term()}
-  def address_please(name, hostname, family) do
-    nodename = :"#{name}@#{hostname}"
-
-    EcsClusterInfo.get_nodes()
-    |> Map.get(nodename)
-    |> case do
-      {ip, port} -> {:ok, ip, port, @magic_version}
-      nil -> :erl_epmd.address_please(name, hostname, family)
-    end
+  def port_please(_name, _ip) do
+    {:port, distribution_port(), @protocol_version}
   end
 
-  def names(hostname) do
-    :erl_epmd.names(hostname)
+  def names(_hostname) do
+    {:error, :no_epmd}
+  end
+
+  defp distribution_port do
+    "DISTRIBUTION_PORT"
+    |> System.fetch_env!()
+    |> String.to_integer()
   end
 end

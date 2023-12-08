@@ -1,13 +1,11 @@
 # ClusterEcs
 
-Use this library to set up clustering within AWS ECS.
-
-This library, unlike others, does not rely on configuring your nodes with `awsvpc` networking mode. Instead it queries ECS's port mappings to accomplish the goal.
+Use this library to set up clustering within AWS ECS for Fargate.
 
 ## Getting started
 
 ### In AWS
-Create a container port mapping (e.g. container port 7777 to host port 0, this will assign a random port).
+Create a container port mapping (e.g. container port 7777 to host port 7777).
 
 ### In your Elixir project
 Configure the libcluster topology:
@@ -28,12 +26,11 @@ config :libcluster,
   ]
 ```
 
-Add `Cluster.EcsClusterInfo` to your supervision tree before the cluster supervisor and provide it with your config:
+Add libcluster to your supervision tre:
 
 ```
 children = [
   ...
-  {Cluster.EcsClusterInfo, Application.get_env(:libcluster, :topologies)[:mycluster][:config]},
   {Cluster.Supervisor, [Application.get_env(:libcluster, :topologies), [name: MyApp.ClusterSupervisor]]}
   ...
   ]
@@ -48,7 +45,10 @@ export DISTRIBUTION_PORT=7777
 Add the following line to `rel/vm.args.eex`:
 
 ```
--epmd_module Elixir.Cluster.EPMD
+-start_epmd false
+-epmd_module Elixir.Cluster.EcsStrategy.EPMD
+-kernel inet_dist_listen_min 7777
+-kernel inet_dist_listen_max 7777
 ```
 
 Configure (if you haven't already) `ex_aws`. The IAM user that you configure needs the following permissions:
@@ -58,25 +58,9 @@ ecs:ListClusters
 ecs:ListServices
 ecs:ListTasks
 ecs:DescribeTasks
-ecs:DescribeContainerInstances
-ec2:DescribeInstances
 ```
 
 ### Optional config
-
-If you want to use IP addresses as the host name in your node names (e.g. `app@10.12.132.4`) set `host_name_source` to `:ip_address` in config:
-```
-config :libcluster,
-  topologies: [
-    mycluster: [
-      strategy: Cluster.EcsStrategy,
-      config: [
-        ...
-        host_name_source: :ip_address
-      ]
-    ]
-  ]
-```
 
 If you want to set rules for which tasks can join the cluster you can leverage the tagging features of ECS and set `match_tags` in your config:
 ```
